@@ -1,0 +1,72 @@
+module datapath(clk, reset, left, right, speed, loose, scored, ball_x_pos, ball_y_pos, pad_pos);
+
+    input clk;
+    input reset;
+    input left;
+    input right;
+    input [3:0]speed;
+    output loose;
+    output scored;
+    output reg [3:0] ball_x_pos;
+    output reg [3:0] ball_y_pos;
+    output reg [3:0] pad_pos;
+
+    localparam LEFT_BOUND = 4’d0,
+               RIGHT_BOUND = 4’d10,
+               UP_BOUND = 4’d0,
+               DOWN_BOUND = 4’d20,
+		v = 1’b0,
+		h = 1’b0; 
+
+
+always @ (posedge clk)  
+   begin  		
+		// movement of the bar
+      if (left && left_pos > LEFT_BOUND) 
+		begin  
+			left_pos <= left_pos - 1;  
+			right_pos <= right_pos - 1;  
+      end  
+      else if(to_right && right_pos < RIGHT_BOUND)
+		begin  		
+			left_pos <= left_pos + 1; 
+			right_pos <= right_pos + 1;  
+      end  
+		
+		//movement of the ball
+		if (v == 1’b0) // go up 
+			ball_y_pos <= ball_y_pos - speed;  
+      else //go down
+			ball_y_pos <= ball_y_pos + speed;  
+		if (h == 1’b1) // go right 
+			ball_x_pos <= ball_x_pos + speed;  
+      else //go down
+			ball_x_pos <= ball_x_pos - speed;  	
+   end 
+
+
+	//change directions when reach the edge or crush the bar
+	always @ (posed clk)  
+   begin
+		if (ball_y_pos <= UP_BOUND)
+		begin	
+			v <= 1;             
+			loose <= 0;
+		end
+		else if (ball_y_pos >= DOWN_BOUND && ball_x_pos == pad_pos)  
+                       v <= 0;  
+                       scored <= 1;
+		else if (ball_y_pos = DOWN_BOUND && ~(ball_x_pos == pad_pos))
+		begin
+			loose <= 1;
+		end
+               else  
+                      v_speed <= v_speed;  
+              
+      if (ball_x_pos = LEFT_BOUND)  
+         h <= 1;  
+      else if (ball_x_pos = RIGHT_BOUND)  
+         h <= 0;  
+      else  
+         h <= h_speed;  
+  end
